@@ -317,18 +317,11 @@ impl Array {
     /// [spec]: https://tc39.es/ecma262/#sec-array.of
     /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/of
     pub(crate) fn of(this: &Value, args: &[Value], context: &mut Context) -> Result<Value> {
-        let is_constructor = this.is_object() && this.as_object().unwrap().is_constructable();
-
-        // construct using `this` if it is a constructor
-        // otherwise use Array
-        let array = if is_constructor {
-            this.as_object().unwrap().construct(
-                &[Value::from(args.len())],
-                this.clone(),
-                context,
-            )?
-        } else {
-            Array::array_create(args.len() as u32, None, context)?
+        let array = match this.as_object() {
+            Some(object) if object.is_constructable() => {
+                object.construct(&[args.len().into()], this.clone(), context)?
+            }
+            _ => Array::array_create(args.len() as u32, None, context)?,
         };
 
         // add properties and set length
