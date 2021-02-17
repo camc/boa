@@ -325,7 +325,6 @@ impl Array {
         };
 
         // add properties and set length
-        array.set_field("length", 0, context)?;
         Array::add_to_array_object(&array, args, context)?;
 
         Ok(array)
